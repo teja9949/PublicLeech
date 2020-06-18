@@ -14,6 +14,8 @@ LOGGER = logging.getLogger(__name__)
 import asyncio
 import os
 import time
+import subprocess
+import shutil
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 from PIL import Image
@@ -25,7 +27,9 @@ from tobrot.helper_funcs.copy_similar_file import copy_file
 from tobrot import (
     TG_MAX_FILE_SIZE,
     EDIT_SLEEP_TIME_OUT,
-    DOWNLOAD_LOCATION
+    DOWNLOAD_LOCATION,
+    DESTINATION_FOLDER,
+    RCLONE_CONFIG
 )
 
 from pyrogram import (
@@ -115,6 +119,17 @@ async def upload_to_tg(
                 dict_contatining_uploaded_files[os.path.basename(local_file_name)] = sent_message.message_id
     # await message.delete()
     return dict_contatining_uploaded_files
+#
+
+async def upload_to_gdrive(file_upload):
+    subprocess.Popen(('touch', 'rclone.conf'), stdout = subprocess.PIPE)
+    with open('rclone.conf', 'a', newline="\n") as fole:
+        fole.write("[DRIVE]\n")
+        fole.write(f"{RCLONE_CONFIG}")
+    destination = f'{DESTINATION_FOLDER}'
+    tmp = subprocess.Popen(['rclone', 'copy', '--config=rclone.conf', f'{file_upload}', 'DRIVE:'f'{destination}', '-v'], stdout = subprocess.PIPE)
+    out = tmp.communicate()
+    print(out)
 
 
 async def upload_single_file(message, local_file_name, caption_str, from_user, edit_media):
