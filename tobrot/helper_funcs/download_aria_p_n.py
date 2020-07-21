@@ -313,9 +313,14 @@ async def check_progress_for_dl(aria2, gid, event, previous_message):
                 # msg += f"\nStatus: {file.status}"
                 msg += f"\nETA: {file.eta_string()}"
                 msg += f"\n<code>/cancel {gid}</code>"
+                inline_keyboard = []
+                ikeyboard = []
+                ikeyboard.append(InlineKeyboardButton("Cancel 🚫", callback_data=(f"cancel {gid}").encode("UTF-8")))
+                inline_keyboard.append(ikeyboard)
+                reply_markup = InlineKeyboardMarkup(inline_keyboard)
                 # LOGGER.info(msg)
                 if msg != previous_message:
-                    await event.edit(msg)
+                    await event.edit(msg, reply_markup=reply_markup)
                     previous_message = msg
             else:
                 msg = file.error_message
